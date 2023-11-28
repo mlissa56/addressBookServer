@@ -1,5 +1,5 @@
 package pkg
 
 func PhoneNormalize(phone string) (normalizedPhone string, err error) {
-    return
+    return phone, nil
 }
