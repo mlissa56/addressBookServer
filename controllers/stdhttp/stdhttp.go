@@ -89,6 +89,7 @@ func (c *Controller) RecordUpdate(w http.ResponseWriter, r *http.Request) {
     }
 }
 
+// RecordDeleteByPhone обрабатывает HTTP запрос для удаления записи по номеру телефона.
 func (c *Controller) RecordDeleteByPhone(w http.ResponseWriter, r *http.Request) {
     phone := strings.Split(r.URL.Path, "/")[1:][1] 
     err := c.DB.RecordDeleteByPhone(phone)

@@ -6,7 +6,7 @@ MIGRATION_NAME = "migration"
 all: start
 
 start: compose-up migrate	
-	go install "github.com/serz999/addressBookServer"
+	go install
 	addressBookServer
 
 compose-up:

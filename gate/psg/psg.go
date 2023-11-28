@@ -29,19 +29,19 @@ func NewPsg(url string) *Psg {
 }
 
 // RecordAdd добавляет новую запись в базу данных.
-func (p *Psg) RecordAdd(record dto.Record) (int64, error) {
+func (p *Psg) RecordAdd(record dto.Record) (string, error) {
     query := `INSERT INTO address_book (name, last_name, middle_name, address, phone) VALUES ($1, $2, $3, $4, $5) RETURNING id`
 
-    var id int64 
+    var res string 
     err := p.Conn.QueryRow(context.Background(), query, 
         record.Name,
         record.LastName,
         record.MiddleName,
         record.Address,
         record.Phone,
-    ).Scan(&id)
+    ).Scan(&res)
 
-	return id, err 
+	return res, err 
 }
 
 // RecordsGet возвращает записи из базы данных на основе предоставленных полей Record.
@@ -58,7 +58,7 @@ func (p *Psg) RecordUpdate(record dto.Record) error {
 
 // RecordDeleteByPhone удаляет запись из базы данных по номеру телефона.
 func (p *Psg) RecordDeleteByPhone(phone string) error {
-    query := `DELETE FROM note WHERE phone = $1` 
+    query := `DELETE FROM address_book WHERE phone = $1` 
     _, err := p.Conn.Exec(context.Background(), query, phone)
 
 	return err 
