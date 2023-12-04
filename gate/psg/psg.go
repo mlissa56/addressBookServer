@@ -1,6 +1,7 @@
 package psg
 
 import (
+    "log"
 	"addressBookServer/models/dto"
 	"context"
 	"errors"
@@ -46,14 +47,55 @@ func (p *Psg) RecordAdd(record dto.Record) (string, error) {
 
 // RecordsGet возвращает записи из базы данных на основе предоставленных полей Record.
 func (p *Psg) RecordsGet(record dto.Record) ([]dto.Record, error) {
+    query, err := SelectRecord(record)
+    if err != nil {
+	    return nil, err
+    }
+    
+	_, values, _ := GetTagsAndFieldsValues(record, "sql.field") 
 
-	return nil, nil
+    rows, err := p.Conn.Query(context.Background(), query, values...)  
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+    
+    var records []dto.Record
+    for rows.Next() {
+        var r dto.Record
+        err = rows.Scan(
+            &r.ID,
+            &r.Name,
+            &r.LastName,
+            &r.MiddleName,
+            &r.Address,
+            &r.Phone,
+        )
+        if err != nil {
+            return nil, err
+        }
+        
+        records = append(records, r) 
+    }
+
+    log.Println(query) 
+    log.Println(values)
+
+    return records, nil
 }
 
-// RecordUpdate обновляет существующую запись в базе данных по номеру телефона.
+// RecordUpdate обновляет существующую запись в базе данных.
 func (p *Psg) RecordUpdate(record dto.Record) error {
-       
-	return nil
+    query := `UPDATE address_book SET name = $1, last_name = $2, middle_name = $3, address = $4 WHERE phone = $5` 
+    _, err := p.Conn.Exec(context.Background(), query, 
+        record.Name,
+        record.LastName,
+        record.MiddleName,
+        record.Address,
+        record.Phone,
+    )
+
+	return err
 }
 
 // RecordDeleteByPhone удаляет запись из базы данных по номеру телефона.
