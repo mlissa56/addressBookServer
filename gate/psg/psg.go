@@ -46,19 +46,31 @@ func (p *Psg) RecordAdd(record dto.Record) (string, error) {
 }
 
 // RecordsGet возвращает записи из базы данных на основе предоставленных полей Record.
-func (p *Psg) RecordsGet(record dto.Record) ([]dto.Record, error) {
-    query, err := SelectRecord(record)
+func (p *Psg) RecordsGet(record dto.Record) ([]dto.Record, error) { 
+	_, values, err := GetTagsAndFieldsValues(record, "sql.field") 
     if err != nil {
-	    return nil, err
+        return nil, err
     }
-    
-	_, values, _ := GetTagsAndFieldsValues(record, "sql.field") 
+
+    var query string
+    if len(values) == 0 {
+        query = "SELECT * FROM address_book;" 
+    } else {
+        query, err = SelectRecord(record)
+        if err != nil {
+            return nil, err
+        }
+    }
+
+    log.Println(query) 
+    log.Println(values)
 
     rows, err := p.Conn.Query(context.Background(), query, values...)  
     if err != nil {
         return nil, err
     }
     defer rows.Close()
+
     
     var records []dto.Record
     for rows.Next() {
@@ -77,9 +89,6 @@ func (p *Psg) RecordsGet(record dto.Record) ([]dto.Record, error) {
         
         records = append(records, r) 
     }
-
-    log.Println(query) 
-    log.Println(values)
 
     return records, nil
 }

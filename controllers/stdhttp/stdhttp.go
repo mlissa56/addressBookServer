@@ -26,8 +26,8 @@ func WriteNotFound(w http.ResponseWriter) {
 }
 
 func WriteInternalServerError(w http.ResponseWriter, err error) {
+    log.Println(err) 
     w.WriteHeader(http.StatusInternalServerError)
-    panic(err)
     w.Write([]byte(`{"code":500,"msg":"` + err.Error() + `"}`))
 }
 
@@ -54,21 +54,18 @@ func (c *Controller) RecordAdd(w http.ResponseWriter, r *http.Request) {
     var rec dto.Record
     err := json.NewDecoder(r.Body).Decode(&rec)
     if err != nil {
-        log.Println(err)
         WriteInternalServerError(w, err) 
         return
     }
 
     rec.Phone, err = pkg.PhoneNormalize(rec.Phone)
     if err != nil {
-        log.Println(err)
         WriteInternalServerError(w, err) 
         return
     }
     
     id, err := c.DB.RecordAdd(rec)
     if err != nil {
-        log.Println(err)
         WriteInternalServerError(w, err) 
         return
     }
@@ -81,14 +78,11 @@ func (c *Controller) RecordsGet(w http.ResponseWriter, r *http.Request) {
     var rec dto.Record
     err := json.NewDecoder(r.Body).Decode(&rec)
     if err != nil {
-        log.Println(err)
-        WriteInternalServerError(w, err) 
-        return
+        rec = dto.Record{}
     }
     
     matchedRecs, err := c.DB.RecordsGet(rec)
     if err != nil {
-        log.Println(err)
         WriteInternalServerError(w, err) 
         return
     }
@@ -98,7 +92,6 @@ func (c *Controller) RecordsGet(w http.ResponseWriter, r *http.Request) {
     for i, matchedRec := range(matchedRecs) {
         jsonbMatchedRec, err := json.Marshal(matchedRec)
         if err != nil {
-            log.Println(err)
             WriteInternalServerError(w, err) 
             return
         }
@@ -118,21 +111,18 @@ func (c *Controller) RecordUpdate(w http.ResponseWriter, r *http.Request) {
     var rec dto.Record
     err := json.NewDecoder(r.Body).Decode(&rec)
     if err != nil {
-        log.Println(err)
         WriteInternalServerError(w, err) 
         return
     }
 
     rec.Phone, err = pkg.PhoneNormalize(rec.Phone)
     if err != nil {
-        log.Println(err)
         WriteInternalServerError(w, err) 
         return
     }
     
     qerr := c.DB.RecordUpdate(rec)
     if qerr != nil {
-        log.Println(qerr)
         WriteInternalServerError(w, qerr) 
         return
     }
@@ -144,7 +134,6 @@ func (c *Controller) RecordDeleteByPhone(w http.ResponseWriter, r *http.Request)
 
     err := c.DB.RecordDeleteByPhone(phone)
     if err != nil {
-        log.Println(err) 
         WriteInternalServerError(w, err)
         return
     }
